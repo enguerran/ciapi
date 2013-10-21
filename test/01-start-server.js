@@ -1,5 +1,5 @@
 restify = require('restify');
-assert = require('assert');
+expect = require('expect.js');
 
 before(function(done) {
     require('../start_server').StartServer();
