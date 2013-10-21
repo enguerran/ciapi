@@ -7,7 +7,10 @@ exports.StartServer = function() {
     var db = mongoose.connect(configmongodb.creds.mongoose_auth_local);
     var Schema = mongoose.Schema;
     var InitiativesSchema = new Schema({
-        name: { type: String, unique: true }
+        name: { type: String, unique: true },
+        pin: { type: Number },
+        city: { type: String },
+        gps: { type: [Number], index: '2d' }
     });
     mongoose.model('Initiatives', InitiativesSchema);
     var Initiatives = mongoose.model('Initiatives');
@@ -19,6 +22,7 @@ exports.StartServer = function() {
         else {
             var initiatives = new Initiatives();
             initiatives.name = req.params.name;
+            initiatives.gps = req.params.gps;
             initiatives.save(function(err, data) {
                 if (err) return next(new restify.InvalidArgumentError(JSON.stringify(err.errors)));
                 res.contentType = 'application/json';
@@ -77,14 +81,30 @@ exports.StartServer = function() {
         }
     }
 
+    function findInitiatives(req, res, next) {
+        if(req.params.gps !== undefined) {
+            var gps = req.params.gps.split(',');
+            Initiatives.find({ gps: { $nearSphere: gps } }, function(err, collection) {
+                res.send(collection===undefined?[]:collection);
+            });
+        }
+        else {
+            return next(new restify.InvalidArgumentError('query is wrong'));
+        }
+    }
+
     var server = restify.createServer();
     server.use(restify.fullResponse());
     server.use(restify.bodyParser());
+    server.use(restify.queryParser());
+
     server.post('/initiatives', createNewInitiative);
     server.get('/initiatives/:id', getInitiative);
     server.get('/initiatives', getInitiatives);
     server.put('/initiatives/:id', updateInitiative);
     server.del('/initiatives/:id', deleteInitiative);
+
+    server.get('/find', findInitiatives);
 
     server.listen(8080, function() {
         console.log('%s listening at %s', server.name, server.url);
