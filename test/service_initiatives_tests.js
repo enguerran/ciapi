@@ -44,7 +44,7 @@ describe('test rest api service: initiatives', function() {
 
     describe('PUT /initiatives/:id', function() {
         it('should update an object', function(done) {
-            client.put('/initiatives/' + id, { name: 'Fabindia New BEL Road' }, function(e, req, res, data) {
+            client.put('/initiatives/' + id, { name: 'Fabindia New BEL Road' , city: 'Bangalore' }, function(e, req, res, data) {
                 expect(e).to.eql(null);
                 expect(typeof data).to.eql('object');
                 expect(data.msg).to.eql('success');
@@ -61,6 +61,7 @@ describe('test rest api service: initiatives', function() {
                 expect(data._id.length).to.eql(24);
                 expect(data._id).to.eql(id);
                 expect(data.name).to.eql("Fabindia New BEL Road");
+                expect(data.city).to.eql("Bangalore");
                 done();
             });
         });
@@ -97,7 +98,7 @@ describe('test rest api service: find', function() {
         it('should return collection', function(done) {
             client.get('/find?gps=13.03,77.56', function(e, req, res, data) {
                 expect(e).to.eql(null);
-                expect(data.length).to.eql(1);
+                expect(data.length).to.be.above(1);
                 expect(data[0]._id).to.eql(id);
                 done();
             });

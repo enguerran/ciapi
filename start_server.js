@@ -50,11 +50,16 @@ exports.StartServer = function() {
     }
 
     function updateInitiative(req, res, next) {
-        if(req.params.id === undefined || req.params.name === undefined) {
-            return next(new restify.InvalidArgumentError('ID and name must be supplied'));
+        if(req.params.id === undefined) {
+            return next(new restify.InvalidArgumentError('ID must be supplied'));
         }
         else {
-            Initiatives.update({ _id: req.params.id }, { name: req.params.name }, { multi: false }, function(err, count, raw) {
+            var updatedData = req.params;
+            delete updatedData._id;
+            if(typeof updatedData.gps === 'string') {
+                updatedData.gps = updatedData.gps.split(','); 
+            }
+            Initiatives.update({ _id: req.params.id }, updatedData, { multi: false }, function(err, count, raw) {
                 if(err) {
                     throw err;
                 }
