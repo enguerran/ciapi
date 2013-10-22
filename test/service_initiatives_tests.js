@@ -7,9 +7,9 @@ var client = restify.createJsonClient({
 describe('test rest api service: initiatives', function() {
     var id;
 
-    describe('POST /initiatives', function() {
+    describe('POST /v1/initiatives', function() {
         it('should returns the created initiatives', function(done) {
-            client.post('/initiatives', { name: 'Fabindia', gps: [13.032724,77.569691] }, function(e, req, res, data) {
+            client.post('/v1/initiatives', { name: 'Fabindia', gps: [13.032724,77.569691] }, function(e, req, res, data) {
                 expect(e).to.eql(null);
                 expect(data.length).to.eql(1);
                 expect(data[0]._id.length).to.eql(24);
@@ -19,9 +19,9 @@ describe('test rest api service: initiatives', function() {
         });
     });
 
-    describe('GET /initiatives/:id', function() {
+    describe('GET /v1/initiatives/:id', function() {
         it('should retrieve an object', function(done) {
-            client.get('/initiatives/' + id, function(e, req, res, data) {
+            client.get('/v1/initiatives/' + id, function(e, req, res, data) {
                 expect(e).to.eql(null);
                 expect(typeof data).to.eql('object');
                 expect(data._id.length).to.eql(24);
@@ -31,9 +31,9 @@ describe('test rest api service: initiatives', function() {
         });
     });
 
-    describe('GET /initiatives', function() {
+    describe('GET /v1/initiatives', function() {
         it('should retrieve a collection', function(done) {
-            client.get('/initiatives', function(e, req, res, data) {
+            client.get('/v1/initiatives', function(e, req, res, data) {
                 expect(e).to.eql(null);
                 expect(data.length).to.be.above(0);
                 expect(data.map(function (item) { return item._id })).to.contain(id);
@@ -42,9 +42,9 @@ describe('test rest api service: initiatives', function() {
         });
     });
 
-    describe('PUT /initiatives/:id', function() {
+    describe('PUT /v1/initiatives/:id', function() {
         it('should update an object', function(done) {
-            client.put('/initiatives/' + id, { name: 'Fabindia New BEL Road' , city: 'Bangalore' }, function(e, req, res, data) {
+            client.put('/v1/initiatives/' + id, { name: 'Fabindia New BEL Road' , city: 'Bangalore' }, function(e, req, res, data) {
                 expect(e).to.eql(null);
                 expect(typeof data).to.eql('object');
                 expect(data.msg).to.eql('success');
@@ -53,9 +53,9 @@ describe('test rest api service: initiatives', function() {
         });
     });
 
-    describe('GET /initiatives/:id', function() {
+    describe('GET /v1/initiatives/:id', function() {
         it('should check the updated object', function(done) {
-            client.get('/initiatives/' + id, function(e, req, res, data) {
+            client.get('/v1/initiatives/' + id, function(e, req, res, data) {
                 expect(e).to.eql(null);
                 expect(typeof data).to.eql('object');
                 expect(data._id.length).to.eql(24);
@@ -67,9 +67,9 @@ describe('test rest api service: initiatives', function() {
         });
     });
 
-    describe('DELETE /initiatives/:id', function() {
+    describe('DELETE /v1/initiatives/:id', function() {
         it('should remove a object', function(done) {
-            client.del('/initiatives/' + id, function(e, req, res, data) {
+            client.del('/v1/initiatives/' + id, function(e, req, res, data) {
                 expect(e).to.eql(null);
                 expect(typeof data).to.eql('object');
                 expect(data.msg).to.eql('success');
@@ -82,9 +82,9 @@ describe('test rest api service: initiatives', function() {
 describe('test rest api service: find', function() {
     var id;
 
-    describe('POST /initiatives', function() {
+    describe('POST /v1/initiatives', function() {
         it('should returns the created initiatives', function(done) {
-            client.post('/initiatives', { name: 'Fabindia', gps: [13.032724,77.569691] }, function(e, req, res, data) {
+            client.post('/v1/initiatives', { name: 'Fabindia', gps: [13.032724,77.569691] }, function(e, req, res, data) {
                 expect(e).to.eql(null);
                 expect(data.length).to.eql(1);
                 expect(data[0]._id.length).to.eql(24);
@@ -94,9 +94,9 @@ describe('test rest api service: find', function() {
         });
     });
 
-    describe('GET /find', function() {
+    describe('GET /v1/find', function() {
         it('should return collection', function(done) {
-            client.get('/find?gps=13.03,77.56', function(e, req, res, data) {
+            client.get('/v1/find?gps=13.03,77.56', function(e, req, res, data) {
                 expect(e).to.eql(null);
                 expect(data.length).to.be.above(1);
                 expect(data[0]._id).to.eql(id);
@@ -105,9 +105,9 @@ describe('test rest api service: find', function() {
         });
     });
 
-    describe('DELETE /initiatives/:id', function() {
+    describe('DELETE /v1/initiatives/:id', function() {
         it('should remove a object', function(done) {
-            client.del('/initiatives/' + id, function(e, req, res, data) {
+            client.del('/v1/initiatives/' + id, function(e, req, res, data) {
                 expect(e).to.eql(null);
                 expect(typeof data).to.eql('object');
                 expect(data.msg).to.eql('success');

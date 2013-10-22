@@ -103,13 +103,13 @@ exports.StartServer = function() {
     server.use(restify.bodyParser());
     server.use(restify.queryParser());
 
-    server.post('/initiatives', createNewInitiative);
-    server.get('/initiatives/:id', getInitiative);
-    server.get('/initiatives', getInitiatives);
-    server.put('/initiatives/:id', updateInitiative);
-    server.del('/initiatives/:id', deleteInitiative);
+    server.post('/v1/initiatives', createNewInitiative);
+    server.get('/v1/initiatives/:id', getInitiative);
+    server.get('/v1/initiatives', getInitiatives);
+    server.put('/v1/initiatives/:id', updateInitiative);
+    server.del('/v1/initiatives/:id', deleteInitiative);
 
-    server.get('/find', findInitiatives);
+    server.get('/v1/find', findInitiatives);
 
     server.listen(8080, function() {
         console.log('%s listening at %s', server.name, server.url);
