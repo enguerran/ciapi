@@ -20,16 +20,17 @@ exports.StartServer = function() {
             return next(new restify.InvalidArgumentError('Name must be supplied'));
         }
         else {
-            var initiatives = new Initiatives();
-            initiatives.name = req.params.name;
-            initiatives.gps = req.params.gps;
+            if(typeof req.params.gps === 'string') {
+                if(req.params.gps != '') req.params.gps = req.params.gps.split(',');
+                else req.params.gps = [];
+            }
+            var initiatives = new Initiatives(req.params);
             initiatives.save(function(err, data) {
-                if (err) return next(new restify.InvalidArgumentError(JSON.stringify(err.errors)));
+                if (err) return next(new restify.InvalidArgumentError(JSON.stringify(err.err)));
                 res.contentType = 'application/json';
                 res.send([data]);
             });
         }
-
     }
 
     function getInitiative(req, res, next) {
@@ -57,7 +58,11 @@ exports.StartServer = function() {
             var updatedData = req.params;
             delete updatedData._id;
             if(typeof updatedData.gps === 'string') {
-                updatedData.gps = updatedData.gps.split(','); 
+                if(updatedData.gps != '') updatedData.gps = updatedData.gps.split(',');
+                else updatedData.gps = [];
+            }
+            else {
+                updatedData.gps = [];
             }
             Initiatives.update({ _id: req.params.id }, updatedData, { multi: false }, function(err, count, raw) {
                 if(err) {
@@ -88,9 +93,10 @@ exports.StartServer = function() {
 
     function findInitiatives(req, res, next) {
         if(req.params.gps !== undefined) {
-            var gps = req.params.gps.split(',');
-            Initiatives.find({ gps: { $nearSphere: gps } }, function(err, collection) {
-                res.send(collection===undefined?[]:collection);
+            var gps = req.params.gps.split(',').map(function (elt) { return parseInt(elt); });
+            console.log(gps);
+            Initiatives.find({ gps: { $near: gps } }, function(err, collection) {
+                res.send(collection === undefined ? [] :collection);
             });
         }
         else {
