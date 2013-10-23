@@ -92,10 +92,10 @@ exports.StartServer = function() {
     }
 
     function findInitiatives(req, res, next) {
-        if(req.params.gps !== undefined) {
-            var gps = req.params.gps.split(',').map(function (elt) { return parseInt(elt); });
-            console.log(gps);
-            Initiatives.find({ gps: { $near: gps } }, function(err, collection) {
+        if(req.params.geocode !== undefined) {
+            var geocode = req.params.geocode.split(',').map(function (elt) { return parseFloat(elt); });
+            console.log(geocode);
+            Initiatives.find({ gps: { $near: geocode } }, function(err, collection) {
                 res.send(collection === undefined ? [] :collection);
             });
         }
@@ -115,7 +115,7 @@ exports.StartServer = function() {
     server.put('/v1/initiatives/:id', updateInitiative);
     server.del('/v1/initiatives/:id', deleteInitiative);
 
-    server.get('/v1/find', findInitiatives);
+    server.get('/v1/search', findInitiatives);
 
     server.listen(8080, function() {
         console.log('%s listening at %s', server.name, server.url);

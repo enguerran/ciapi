@@ -94,9 +94,9 @@ describe('test rest api service: find', function() {
         });
     });
 
-    describe('GET /v1/find', function() {
+    describe('GET /v1/search', function() {
         it('should return collection', function(done) {
-            client.get('/v1/find?gps=13.03,77.56', function(e, req, res, data) {
+            client.get('/v1/search?geocode=13.03,77.56', function(e, req, res, data) {
                 expect(e).to.eql(null);
                 expect(data.length).to.be.above(1);
                 expect(data[0]._id).to.eql(id);
