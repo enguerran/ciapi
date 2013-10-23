@@ -92,16 +92,35 @@ exports.StartServer = function() {
     }
 
     function findInitiatives(req, res, next) {
+        var query = {};
+
+        // q=keyword -> search keyword in the name and others metadata of the initiatives
+        if(req.params.q !== undefined) {
+            return next(new restify.InvalidArgumentError("'q' is not yet implemented..."));
+        }
+
+        // geocode=lat,long[,rad] -> search initiatives in the area centered in lat,long and with the radius rad
         if(req.params.geocode !== undefined) {
-            var geocode = req.params.geocode.split(',').map(function (elt) { return parseFloat(elt); });
+            var geocode = { array: req.params.geocode.split(',') };
             console.log(geocode);
-            Initiatives.find({ gps: { $near: geocode } }, function(err, collection) {
-                res.send(collection === undefined ? [] :collection);
-            });
+            if(geocode.array.length >= 2 && geocode.array.length <= 3) {
+                geocode.latitude = parseFloat(geocode.array[0]);
+                geocode.longitude = parseFloat(geocode.array[1]);
+                if(geocode.array[2]) {
+                    geocode.distance = geocode.array[2];
+                }
+                console.log(geocode);
+                query.gps = { $near: [geocode.latitude, geocode.longitude] };
+            }
+            else {
+                console.log("geocode is not in a correct format");
+            }
         }
-        else {
-            return next(new restify.InvalidArgumentError('query is wrong'));
-        }
+
+        console.log('mongodb query is : db.initiatives.find('+ JSON.stringify(query) + ')');
+        Initiatives.find(query, function(err, collection) {
+            res.send(collection === undefined ? [] :collection);
+        });
     }
 
     var server = restify.createServer();
