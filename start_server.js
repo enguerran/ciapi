@@ -8,9 +8,38 @@ exports.StartServer = function() {
     var Schema = mongoose.Schema;
     var InitiativesSchema = new Schema({
         name: { type: String, unique: true },
-        pin: { type: Number },
-        city: { type: String },
-        gps: { type: [Number], index: '2d' }
+        contact: {
+            address: {
+                pin: { type: String},
+                city: { type: String},
+                neighbourghood: { type: String },
+                street: { type: String }
+            },
+            phone: [
+                {
+                    label: { type: String},
+                    number: { type: String }
+                }
+            ],
+            email: [
+                {
+                    label: { type: String },
+                    addresse: { type: String }
+                }
+            ],
+            website: { type: String }
+        },
+        geocode: { type: {}, index: '2dsphere' },
+        sector: { type: String},
+        legalStatus: { type: String },
+        tags: { type: [String]},
+        description: { type: String },
+        meta: {
+            favorite: { type: Boolean },
+            published: { type: Boolean },
+            created: { type: Date, default: Date.now },
+            updated: { type: Date, default: Date.now}
+        }
     });
     mongoose.model('Initiatives', InitiativesSchema);
     var Initiatives = mongoose.model('Initiatives');
@@ -102,22 +131,19 @@ exports.StartServer = function() {
         // geocode=lat,long[,rad] -> search initiatives in the area centered in lat,long and with the radius rad
         if(req.params.geocode !== undefined) {
             var geocode = { array: req.params.geocode.split(',') };
-            console.log(geocode);
             if(geocode.array.length >= 2 && geocode.array.length <= 3) {
                 geocode.latitude = parseFloat(geocode.array[0]);
                 geocode.longitude = parseFloat(geocode.array[1]);
                 if(geocode.array[2]) {
                     geocode.distance = geocode.array[2];
                 }
-                console.log(geocode);
-                query.gps = { $near: [geocode.latitude, geocode.longitude] };
+                query.geocode = { $near: { $geometry: { type: "Point", coordinates: [geocode.latitude, geocode.longitude] } } };
             }
             else {
                 console.log("geocode is not in a correct format");
             }
         }
 
-        console.log('mongodb query is : db.initiatives.find('+ JSON.stringify(query) + ')');
         Initiatives.find(query, function(err, collection) {
             res.send(collection === undefined ? [] :collection);
         });
