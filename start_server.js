@@ -49,10 +49,6 @@ exports.StartServer = function() {
             return next(new restify.InvalidArgumentError('Name must be supplied'));
         }
         else {
-            if(typeof req.params.gps === 'string') {
-                if(req.params.gps != '') req.params.gps = req.params.gps.split(',');
-                else req.params.gps = [];
-            }
             var initiatives = new Initiatives(req.params);
             initiatives.save(function(err, data) {
                 if (err) return next(new restify.InvalidArgumentError(JSON.stringify(err.err)));
