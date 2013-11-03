@@ -51,9 +51,11 @@ exports.StartServer = function() {
         else {
             var initiatives = new Initiatives(req.params);
             initiatives.save(function(err, data) {
-                if (err) return next(new restify.InvalidArgumentError(JSON.stringify(err.err)));
-                res.contentType = 'application/json';
+                if (err) {
+                    return next(new restify.InvalidContentError(err.err));
+                }
                 res.send([data]);
+                return next();
             });
         }
     }
@@ -65,6 +67,7 @@ exports.StartServer = function() {
         else {
             Initiatives.findById(req.params.id, function(err, initiative) {
                 res.send(initiative);
+                return next;
             })
         }
     }
@@ -72,6 +75,7 @@ exports.StartServer = function() {
     function getInitiatives(req, res, next) {
         Initiatives.find(function(err, initiatives) {
                 res.send(initiatives);
+                return next();
         });
     }
 
@@ -91,10 +95,11 @@ exports.StartServer = function() {
             }
             Initiatives.update({ _id: req.params.id }, updatedData, { multi: false }, function(err, count, raw) {
                 if(err) {
-                    throw err;
+                    return next(new restify.InvalidContentError(err.err));
                 }
                 else {
                     res.send((count===1)?{ msg: 'success' }:{ msg: 'error'});
+                    return next
                 }
             });
         }
@@ -107,10 +112,11 @@ exports.StartServer = function() {
         else {
             Initiatives.remove({ _id: req.params.id }, function(err, count) {
                 if(err) {
-                    throw err;
+                    return next(new restify.InvalidContentError(err.err));
                 }
                 else {
                     res.send((count===1)?{ msg: 'success' }:{ msg: 'error'});
+                    return next();
                 }
             });
         }
@@ -136,12 +142,13 @@ exports.StartServer = function() {
                 query.geocode = { $near: { $geometry: { type: "Point", coordinates: [geocode.latitude, geocode.longitude] } } };
             }
             else {
-                console.log("geocode is not in a correct format");
+                return next(new restify.InvalidArgumentError("geocode is not in a correct format"));
             }
         }
 
         Initiatives.find(query, function(err, collection) {
             res.send(collection === undefined ? [] :collection);
+            return next();
         });
     }
 
