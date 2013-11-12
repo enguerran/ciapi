@@ -157,6 +157,14 @@ exports.StartServer = function() {
     server.use(restify.bodyParser());
     server.use(restify.queryParser());
 
+    server.use(function(req,res,next) {
+        var key = req.query['apikey'];
+        if(key === "apikey") {
+            next();
+        }
+        else return next(new restify.NotAuthorizedError("You need an apikey."));
+    });
+
     server.post('/v1/initiatives', createNewInitiative);
     server.get('/v1/initiatives/:id', getInitiative);
     server.get('/v1/initiatives', getInitiatives);

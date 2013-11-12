@@ -9,7 +9,8 @@
     "dependencies": {
         "restify": "*",
         "mongoose": "*",
-        "expect.js": "*"
+        "expect.js": "*",
+        "passport": "*"
     },
     "engines": {
         "node": "0.10.x",
