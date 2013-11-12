@@ -152,17 +152,88 @@ exports.StartServer = function() {
         });
     }
 
+    function getAccessToken(req, res, next) {
+        var plaintext = {
+            passphrase: "hello",
+            client: {
+                name: "consciousindia website",
+                id: "12345"
+            },
+            expire: new Date(2013,12,30)
+        };
+
+        var password = "consciousindia";
+
+        if(req.params.user === "admin") {
+            plaintext.user = {};
+            plaintext.user.login = req.params.user;
+            plaintext.user.password = req.params.password;
+        }
+        else {
+            return next(new restify.NotAuthorizedError("Check your credentials."));
+        }
+
+        res.send(_encrypt(JSON.stringify(plaintext), password).join(""));
+    }
+
+    function _encrypt(plaintext, password) {
+        var cipher = crypto.createCipher("aes192", password);
+        var msg = [];
+        msg.push(cipher.update(plaintext, "binary", "hex"));
+        msg.push(cipher.final("hex"));
+
+        return msg;
+    }
+
+    function _decrypt(ciphertext, password) {
+        var decipher = crypto.createDecipher("aes192", password);
+        var msg = [];
+
+        msg.push(decipher.update(ciphertext, "hex", "binary"));
+        msg.push(decipher.final("binary"));
+
+        return msg;
+    }
+
+    function isValid(key, req) {
+        var password = "consciousindia";
+        var data = JSON.parse(_decrypt(key, password).join(""));
+        console.log(data);
+        if(Date.parse(data.expire) >= Date.now()) {
+            if(data.passphrase === "hello") {
+                if(req.method === "GET") {
+                    return true;
+                }
+                // TODO: Store login and password in db
+                // TODO: encrypt password and use https
+                else if(data.user && data.user.login === "admin" && data.user.password === "password") {
+                    console.log("user identified: " + data.user.login + ":" + data.user.password);
+                    return true;
+                }
+            }
+        }
+        else {
+            console.log("expirated");   
+        }
+        return false;
+    }
+
     var server = restify.createServer();
     server.use(restify.fullResponse());
     server.use(restify.bodyParser());
     server.use(restify.queryParser());
 
+    var crypto = require("crypto");
+    server.post('/accessToken', getAccessToken);
+
     server.use(function(req,res,next) {
-        var key = req.query['apikey'];
-        if(key === "apikey") {
-            next();
+        if(req.headers.authorization) {
+            var key = req.headers.authorization.split(" ")[1];
+            if(isValid(key, req)) {
+                next();
+            }
         }
-        else return next(new restify.NotAuthorizedError("You need an apikey."));
+        return next(new restify.NotAuthorizedError("You need an apikey."));
     });
 
     server.post('/v1/initiatives', createNewInitiative);
