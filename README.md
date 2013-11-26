@@ -2,12 +2,19 @@ Conscious India API
 ===================
 
 ## API doc
-- `GET /initiatives` : get a JSON with all initiatives in the database
-- `GET /initiatives/:id` : get a JSON with details of the initiative with :id
-- `POST /initiatives` : add a initiatives to the database
-- `PUT /initiatives/:id` : change details of the initiative with :id
-- `DELETE /initiatives/:id` : delete from the database the initiative with :id
-- `GET /find` : get a JSON with filtered initiatives
+- `GET /v1/initiatives` : get a JSON with all initiatives in the database
+- `GET /v1/initiatives/:id` : get a JSON with details of the initiative with :id
+- `POST /v1/initiatives` : add a initiatives to the database
+- `PUT /v1/initiatives/:id` : change details of the initiative with :id
+- `DELETE /v1/initiatives/:id` : delete from the database the initiative with :id
+- `GET /v1/find` : get a JSON with filtered initiatives
+
+## Authorization
+User must first ask for a access token with: `curl http://localhost:8080/accessToken -H "Content-Type: application/json" -d '{"username": "username", "password": "password"}'`.
+
+Then the access-token must be add to the request header like that : `curl http://localhost:8080/v1/initiatives -H "Authorization: Access-Token <ACCESS_TOKEN>" -H "Content-Type: application/json" -d '{"name": "update2", "geocode": [45,0]}'`.
+
+The authorization checks the username, the password, the client name/id and a passphrase. Those information are stored in auth-config.js (@see auth-config-sample.js)
 
 ## Useful links
 - [start a simple web server](http://blog.ticabri.com/blog/2013/08/31/start-simple-web-server/)

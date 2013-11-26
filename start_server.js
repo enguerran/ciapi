@@ -2,7 +2,8 @@ exports.StartServer = function() {
 
     var restify = require('restify');
     var mongoose = require('mongoose');
-    var configmongodb = require('./config');
+    var configmongodb = require('./db-config');
+    var auth = require('./auth-config');
     
     var db = mongoose.connect(configmongodb.creds.mongoose_auth_local);
     var Schema = mongoose.Schema;
@@ -161,19 +162,15 @@ exports.StartServer = function() {
             },
             expire: new Date(2013,12,30)
         };
-
-        var password = "consciousindia";
-
-        if(req.params.user === "admin") {
-            plaintext.user = {};
-            plaintext.user.login = req.params.user;
-            plaintext.user.password = req.params.password;
+        console.log(auth.configs);
+        if(req.params.username === auth.config.admin.username) {
+            plaintext.creds = { username: req.params.username, password: req.params.password };
         }
         else {
             return next(new restify.NotAuthorizedError("Check your credentials."));
         }
 
-        res.send(_encrypt(JSON.stringify(plaintext), password).join(""));
+        res.send(_encrypt(JSON.stringify(plaintext), auth.config.password).join(""));
     }
 
     function _encrypt(plaintext, password) {
@@ -196,24 +193,27 @@ exports.StartServer = function() {
     }
 
     function isValid(key, req) {
-        var password = "consciousindia";
-        var data = JSON.parse(_decrypt(key, password).join(""));
-        console.log(data);
-        if(Date.parse(data.expire) >= Date.now()) {
-            if(data.passphrase === "hello") {
+        var data = JSON.parse(_decrypt(key, auth.config.password).join(""));
+        if(Date.parse(data.expire) >= Date.parse(auth.config.clients[0].expire)) {
+            if(data.passphrase === auth.config.passphrase && data.client.id === auth.config.clients[0].id) {
+                // GET is allowed for anyone with the correct passphrase and a identified id
                 if(req.method === "GET") {
                     return true;
                 }
-                // TODO: Store login and password in db
                 // TODO: encrypt password and use https
-                else if(data.user && data.user.login === "admin" && data.user.password === "password") {
-                    console.log("user identified: " + data.user.login + ":" + data.user.password);
+                else if(data.creds && data.creds.username === auth.config.admin.username && data.creds.password === auth.config.admin.password) {
                     return true;
                 }
+                else {
+                    console.log("There is something wrong with the authorization");
+                }
+            }
+            else {
+                console.log("There is something wrong with the authorization");
             }
         }
         else {
-            console.log("expirated");   
+            console.log("Access Token is expirated");
         }
         return false;
     }
@@ -228,12 +228,15 @@ exports.StartServer = function() {
 
     server.use(function(req,res,next) {
         if(req.headers.authorization) {
-            var key = req.headers.authorization.split(" ")[1];
-            if(isValid(key, req)) {
-                next();
+            var authorizationInfo = req.headers.authorization.split(" ")[1];
+            if(authorizationInfo[0] === 'Access-Token') {
+                var key = authorizationInfo[1];
+                if(isValid(key, req)) {
+                    next();
+                }
             }
         }
-        return next(new restify.NotAuthorizedError("You need an apikey."));
+        return next(new restify.NotAuthorizedError("You need an access token."));
     });
 
     server.post('/v1/initiatives', createNewInitiative);
