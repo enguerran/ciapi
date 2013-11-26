@@ -228,13 +228,22 @@ exports.StartServer = function() {
 
     server.use(function(req,res,next) {
         if(req.headers.authorization) {
-            var authorizationInfo = req.headers.authorization.split(" ")[1];
+            var authorizationInfo = req.headers.authorization.split(" ");
             if(authorizationInfo[0] === 'Access-Token') {
                 var key = authorizationInfo[1];
                 if(isValid(key, req)) {
                     next();
                 }
+                else {
+                    console.log("Auth is not valid");
+                }
             }
+            else {
+                console.log("Request headers is not correct");
+            }
+        }
+        else {
+            console.log("No authorization header");
         }
         return next(new restify.NotAuthorizedError("You need an access token."));
     });
