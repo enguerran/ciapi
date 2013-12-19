@@ -2,6 +2,7 @@
     "name": "ciapi",
     "version": "0.0.1",
     "description": "the conscious india API",
+    "private": true,
     "main": "app.js",
     "scripts": {
         "test": "mocha -R TAP"
@@ -18,7 +19,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/ConsciousIndia/ciapi"
+        "url": "https://github.com/enguerran/ciapi"
     },
     "keywords": [
         "node",
